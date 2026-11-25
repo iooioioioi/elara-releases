@@ -100,7 +100,9 @@ param(
         if (-not ($g -and $g.PSObject.Properties["hooks"])) { $newGroups += , $g; continue }
         $keep = @()
         foreach ($h in @($g.hooks)) {
+          # old form: one shell string in command; exec form: the exe in command and the script path in args (no shell string)
           $cmd = if ($h -and $h.PSObject.Properties["command"]) { ([string]$h.command).Replace("\", "/") } else { "" }
+          if ($h -and $h.PSObject.Properties["args"] -and $h.args) { $cmd = $cmd + " " + ((@($h.args) | ForEach-Object { ([string]$_).Replace("\", "/") }) -join " ") }
           if ($cmd -and $cmd.IndexOf($needle, [StringComparison]::OrdinalIgnoreCase) -ge 0) { $count++ } else { $keep += , $h }
         }
         if ($keep.Count -eq @($g.hooks).Count) { $newGroups += , $g }
